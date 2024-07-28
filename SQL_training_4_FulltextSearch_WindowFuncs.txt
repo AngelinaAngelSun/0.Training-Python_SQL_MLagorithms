@@ -1,0 +1,809 @@
+﻿	В этом блокноте содержатся тренировочные материалы по MySql
+
+1) Поиск текста: при помощи LIKE, %, _, полнотекстовый поиск.
+2) Вспомогательные функции: математические, строковые, функции даты, сортировка по дате.
+3) Агрегация, подзапросы UNION, UNION ALL, IN, EXCEPT, INTERSECT, EXISTS, SELECT FROM SELECT, CTE (Common Table Expressions). 
+4) Оконные функции.
+ 
+ 
+
+1. ПОИСК ТЕКСТА: при помощи LIKE, %, _, полнотекстовый поиск
+
+
+ЗАДАНИЕ
+Выберите из таблицы users всех пользователей, чьи фамилии начинаются на 'А' без учета регистра. Отсортируйте данные в алф. порядке по фамилии и имени.
+
+	SELECT *
+	FROM users 
+	WHERE last_name LIKE 'А%'
+	ORDER BY last_name, first_name;
+
+
+ЗАДАНИЕ
+Выберите из таблицы domains имена всех доменов, у которых домен первого уровня состоит из 3 символов.
+Отсортируйте данные по имени домена в алфавитном порядке. В итоговой таблице должен остаться только столбец domain.
+
+	SELECT domain
+	FROM domains
+	WHERE domain LIKE '%.___'
+	ORDER BY domain;   
+
+
+ЗАДАНИЕ
+Один из участников ДТП скрылся с места аварии. Однако прохожие успели заметить часть номера автомобиля нарушителя.
+В частности они запомнили, что серия заканчивается на 'ОР' (русскими буквами), а регистрационный номер начинается с единицы. 
+Также они запомнили марку автомобиля — Ford, и его цвет — желтый или зеленый (мнения разделились, так как на улице было уже темно).
+Получите из таблицы cars все автомобили, которые подходят под описание.
+
+	SELECT *
+	FROM cars
+	WHERE number LIKE '_1__ор%' 
+		  AND mark = 'Ford' 
+		  AND color IN ('зеленый', 'желтый');
+
+
+ЗАДАНИЕ
+Правильное название марки автомобилей — BMW (все буквы заглавные). Однако в таблице много автомобилей BMW, которые записаны неверно.
+Найдите все автомобили с неверным названием.
+
+	SELECT *
+	FROM cars
+	WHERE MARK LIKE '___' 
+		  AND mark NOT LIKE BINARY 'BMW';
+
+
+ЗАДАНИЕ
+В таблице products содержатся товары из женского магазина. Пользователь ищет джинсы фирмы Mango 36 или 38 размера. 
+Получите из таблицы id, название и цену всех подходящих товаров. Учитывайте, что некоторых позиций на складе нет.
+Таблица была создана с помощью следующего запроса:
+CREATE TABLE products (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    price INTEGER UNSIGNED NOT NULL DEFAULT 0,
+    sizes SET('32','34','36','38','40','42','44','46','48','50','52','M','L','S','XL','XS','2XL','4XL') NULL,
+    FULLTEXT INDEX name(name)
+   );
+   
+    SELECT id,
+		   name ,
+		   price
+	FROM products
+	WHERE MATCH(name) AGAINST ('+Джинсы +Mango' IN BOOLEAN MODE) AND (FIND_IN_SET('36', sizes) OR FIND_IN_SET('38', sizes)) AND count > 0;
+
+
+ЗАДАНИЕ
+Найдите в таблице forum все посты, которые содержат слова «ошибка» или «проблема».
+Выведите только id и название поста. Таблица была создана с помощью следующего запроса:
+CREATE TABLE forum (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    subject VARCHAR(255) NULL,
+    author_id INTEGER NULL,
+    post TEXT NULL,
+    FULLTEXT INDEX forum_text(subject, post)
+  );
+  
+	SELECT id, subject
+	FROM forum
+	WHERE MATCH(subject, post) AGAINST('ошибка проблема');
+
+
+ЗАДАНИЕ
+В предыдущей задаче мы искали слова «ошибка» или «проблема», однако в текстах эти слова склоняются и мы пропустили «ошибки», «ошибками», «проблемы» и тд.
+Измените ваш предыдущий запрос так, чтобы он искал ошибки и проблемы с любыми окончаниями. Структура и данные в таблице остались такими же.
+
+	SELECT id, subject
+	FROM forum
+	WHERE MATCH(subject, post) AGAINST('ошибк* проблем*' IN BOOLEAN MODE);
+
+
+ЗАДАНИЕ
+Получите из таблицы products все джинсы и жилеты, за исключеним товаров фирмы Mango. Таблица была создана с помощью следующего запроса:
+CREATE TABLE products (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    price INTEGER UNSIGNED NOT NULL DEFAULT 0,
+    sizes SET('32','34','36','38','40','42','44','46','48','50','52','M','L','S','XL','XS','2XL','4XL') NULL,
+    FULLTEXT INDEX name(name)
+   );
+   
+	SELECT *
+	FROM products
+	WHERE MATCH(name) AGAINST('джинсы жилет -Mango' IN BOOLEAN MODE);
+
+
+ЗАДАНИЕ
+Найдите в таблице products все товары, которые содержат фразу «Джинсы Mango». Данные отсортируйте по цене. Выведите только id, название и цену.
+Таблица была создана с помощью следующего запроса:
+ CREATE TABLE products (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    price INTEGER UNSIGNED NOT NULL DEFAULT 0,
+    sizes SET('32','34','36','38','40','42','44','46','48','50','52','M','L','S','XL','XS','2XL','4XL') NULL,
+    FULLTEXT INDEX name(name)
+  );
+  
+	SELECT id,
+		   name ,
+		   price
+	FROM products
+	WHERE MATCH(name) AGAINST('"Джинсы Mango"' IN BOOLEAN MODE)
+	ORDER BY price;
+
+
+ЗАДАНИЕ
+Получите из таблицы products все джинсы и юбки компании Mango. Выведите только id, название и цену. 
+Данные отсортируйте по цене. Не выводите товары, которых нет в наличии. 
+В таблице уже есть нужный полнотекстовый индекс, дополнительно создавать его не надо.
+
+	SELECT id,
+		   name,
+		   price
+	FROM products
+	WHERE (MATCH(name) AGAINST('+джинсы +Mango' IN BOOLEAN MODE) 
+		  OR MATCH(name) AGAINST('+юбка +Mango' IN BOOLEAN MODE))  
+		  AND count > 0
+	ORDER BY price;
+
+
+
+
+2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ: математические, строковые, функции даты, сортировка по дате и др.
+
+ЗАДАНИЕ 
+Для удобства покупателей, в продуктовом магазине решили округлять суммы в чеках в сторону покупателей. 
+Если стоимость товаров получилась в 250 рублей 74 копейки, то в чеке будет 250 рублей ровно.
+Получите из таблицы bills id чека и конечную сумму в чеке (final_amount). При расчете учитывайте персональную скидку покупателя. 
+Величина скидки задана в процентах.
+
+	SELECT id,
+		   FLOOR(amount - amount * personal_sale/100) as final_amount
+	FROM bills;
+
+
+ЗАДАНИЕ
+В компании решили провести e-mail рассылку с акционным предложением. 
+Но перед отправкой всех писем решили сделать тестовый запуск на одной трети аудитории. 
+И для равномерного распределения пользователей решили отправлять письма каждому третьему клиенту (id равны 3, 6, 9 и тд).
+Выберите из таблицы users каждого третьего пользователя (только id, имя и email).
+
+	SELECT id,
+		   first_name,
+		   email
+	FROM users
+	WHERE NOT id % 3;
+
+
+ЗАДАНИЕ
+Комментарии к посту на сайте разбиты на страницы – по 10 комментариев на каждой. 
+Выведите из таблицы posts id поста, количество комментариев и количество страниц, которое необходимо для вывода этих комментариев.
+
+	SELECT id,
+		   comments,
+		   CEIL(comments / 10) as pages
+	FROM posts;
+
+
+ЗАДАНИЕ
+В таблице passports хранятся данные о паспортах пользователей. Серия и номер паспорта хранятся в отдельных строковых столбцах.
+Получите из таблицы id пользователя и его паспорт в формате SSSSNNNNNN, где SSSS — серия, а NNNNNN — номер).
+Итоговый номер паспорта должен иметь название passport. Данные отсортируйте по id пользователя.
+
+	SELECT  user_id, 
+			CONCAT(series, number) as passport
+	FROM passports
+	ORDER BY 1
+
+
+ЗАДАНИЕ
+В таблице passports содержатся данные о паспортах пользователей. 
+Серия и номер паспорта хранятся в отдельных целочисленных столбцах, поместите их в один столбец (через пробел).
+При выводе длина серии должна составлять 4 символа, а длина номера — 6 символов.
+Составьте запрос так, чтобы короткие серии и номера получили лидирующие нули: вместо «21 81400» должно выводиться «0021 081400».
+Данные отсортируйте сперва по серии, а потом по номеру.
+
+	SELECT  user_id, 
+			CONCAT_WS(" ", lpad(series, 4, '0'), trim(lpad(number, 6, '0'))) as passport 
+	FROM passports
+	ORDER BY series, number;
+
+
+ЗАДАНИЕ
+Выведите из таблицы users два столбца. В первый поместите id пользователя, а во второй его ФИО разделенные пробелами (name). 
+Данные должны быть отсортированы в алфавитном порядке сперва по фамилии, затем по имени и отчеству.
+Выводить нужно только тех пользователей, у которых есть отчество.
+
+	SELECT id,
+		   CONCAT_WS(' ', last_name, first_name, patronymic) as name  
+	FROM users
+	WHERE patronymic != ''
+	ORDER BY last_name, first_name, patronymic 
+
+
+ЗАДАНИЕ
+Получите из таблицы users всех пользователей от 18 лет и старше с фамилией, заканчивающейся на «ова». 
+Отсортируйте результаты по возрасту, а затем по фамилии. В итоговой таблице нужно выводить все столбцы.
+
+	SELECT *
+	FROM users
+	WHERE age >= 18 AND last_name LIKE '%ова'
+	ORDER BY age, last_name
+
+
+ЗАДАНИЕ
+В таблице users в поле passport хранятся данные о паспорте пользователя в символьном формате. 
+В одном поле хранится и серия (первые 4 цифры) и номер, последние 6 цифр. Если у пользователя нет паспорта — NULL.
+Получите id пользователя, а также раздельно серию паспорта и его номер. Серия должна быть в колонке series, а номер в колонке number.
+Пользователей без паспорта исключите.
+
+	SELECT id, 
+		   LEFT(passport, 4) AS series,
+		   RIGHT(passport, 6) AS number
+	FROM users
+	WHERE passport IS NOT NULL;
+
+
+ЗАДАНИЕ    
+Получите из таблицы tasks все задачи, запланированные на будущее. Данные отсортируйте в хронологическом порядке по полю planned_date.
+
+	SELECT  *
+	FROM tasks
+	WHERE planned_date > NOW()
+	ORDER BY planned_date
+
+
+ЗАДАНИЕ
+Получите из таблицы users имена, фамилии и даты рождений пользователей, которые родились в 1994 году.
+Дату следует вывести в формате ДД.ММ.ГГГГ в поле user_birthday. Отсортируйте результаты в хронологическом порядке по полю birthday.
+
+	SELECT first_name,
+		   last_name,
+		   DATE_FORMAT(birthday, '%d.%m.%Y') as user_birthday
+	FROM users
+	WHERE year(birthday) = '1994'
+	ORDER BY birthday
+
+
+ЗАДАНИЕ
+Данные о записях пациентов к врачу хранятся в таблице calendar.
+Перенесите на 1,5 часа вперед все записи после 13 часов дня (включительно) за 14 мая 2017 года.
+
+	UPDATE calendar
+	SET visit_date = visit_date + INTERVAL '90' MINUTE           -- INTERVAL '1.30' HOUR_MINUTE
+	WHERE date(visit_date) = '2017-05-14' AND time(visit_date) >= '13:00:00' 
+
+
+ЗАДАНИЕ
+В таблице visits даты хранятся в часовом поясе по Гринвичу (GMT). Выведите id посетителей и даты их визита в часовом поясе Москвы.
+Отсортируйте вывод в хронологическом порядке. Дату следует вывести в формате ДД.ММ.ГГГГ ЧЧ:ММ в столбце visit_date.
+
+	SELECT user_id, 
+		   DATE_FORMAT(date + INTERVAL 3 HOUR, '%d.%m.%Y %H:%i') as visit_date
+	FROM visits
+	ORDER BY date 
+
+
+ЗАДАНИЕ
+В таблице drivers хранятся данные о гонщиках спортивного клуба. 
+Выведите фамилию, имя и дни рождения гонщиков, допущенных к соревнованиям, в соответствии с условиями: 
+1) Допускаются только совершеннолетние мужчины (тем кому исполнилось 18 лет); 2) Соревнования проходят 8 августа 2018 года.
+Примите во внимание факт, что по 191 статье гражданского кодекса, совершеннолетие наступает не в день рождения, а на следующий за ним день.
+Отсортируйте данные в алфавитном порядке по фамилии и имени. 
+
+	SELECT last_name,
+		   first_name, 	
+		   birthday
+	FROM drivers
+	WHERE sex = 'm'
+		  and   (birthday + INTERVAL 18 YEAR) < '2018-08-08'
+	ORDER BY last_name, first_name
+
+
+ЗАДАНИЕ
+Получите из таблицы payments последние 5 платежей, которые произошли в марте 2017 года.
+Выведете номер платежа, id пользователя, сумму и дату (date) в формате ДД.ММ.ГГГГ ЧЧ:ММ.
+
+	SELECT id, 
+		   user_id, 
+		   amount, 
+		   DATE_FORMAT(date, '%d.%m.%Y %H:%i') as date
+	FROM payments
+	WHERE YEAR(date) = '2017' AND MONTH(date) = '03' 
+	ORDER BY payments.date DESC
+	LIMIT 5
+
+
+ЗАДАНИЕ
+Получите из таблицы users всех пользователей, которые родились в выходные дни.
+Отсортируйте данные по полю birthday в обратном хронологическом порядке.
+
+	SELECT *
+	FROM users
+	WHERE weekday(birthday) IN (5, 6)
+	ORDER BY birthday DESC
+
+
+ЗАДАНИЕ
+Посчитайте общую стоимость выполненных заказов за январь 2015 года. Результат выведите в колонке с именем income.
+
+	SELECT sum(amount) as income
+	FROM orders
+	WHERE month(date) = '01' AND year(date) = '2015' AND status = 'success';
+
+
+ЗАДАНИЕ
+Получите стоимость самого дорогого отмененного заказа. Результат выведите в колонке с именем max_losses.
+
+	SELECT MAX(amount) as max_losses
+	FROM orders
+	WHERE status = 'cancelled';
+
+
+ЗАДАНИЕ
+Получите средний чек магазина за 2015 год. Средний чек — это средняя стоимость выполненных (success) заказов.
+Результат округлите до 2 знаков после точки и выведите в колонке с именем avg_check.
+
+	SELECT ROUND(AVG(amount), 2)  as avg_check
+	FROM orders
+	WHERE YEAR(date) = '2015' AND status = 'success';
+
+
+ЗАДАНИЕ
+Получите из таблицы clients средний возраст и количество всех мужчин.
+Возраст округлите до ближайшего нижнего значения и выведите в колонке age, а количество в count.
+
+	SELECT FLOOR(AVG(age)) as age,
+			count(*) as count
+	FROM clients
+	WHERE sex = 'm';
+
+
+ЗАДАНИЕ
+Получите дату первого (минимальную дату) отмененного заказа. Значение выведите в формате ДД.ММ.ГГГГ в колонке date.
+
+	SELECT
+			DATE_FORMAT(MIN(date), '%d.%m.%Y') as date
+	FROM orders
+	WHERE status = 'cancelled';
+
+
+ЗАДАНИЕ
+Посчитайте сколько пользователей находилось на сайте 8 апреля 2018 года в 12:36:17. Данные выведите в колонке с именем users.
+Считайте, что пользователь находился на сайте, если он совершал какие-то действия в последние 5 минут до контрольного времени.
+
+	SELECT COUNT(id) AS users
+	FROM users
+	WHERE activity_date BETWEEN  '2018-04-08 12:31:17' AND '2018-04-08 12:36:17';
+
+
+ЗАДАНИЕ
+В таблице transactions хранится информация по движению денег по счету компании.
+Поле amount отвечает за сумму, а поле direction за направление платежа: in — входящий платеж, out — исходящий.
+Входящие платежи облагаются налогом в 6%, за исключением тех, у которых стоит пометка no_tax = TRUE.
+Посчитайте какой налог должна заплатить организация за 1 квартал 2017 года, округлите вверх до ближайшего целого и выведите в колонке tax.
+
+	SELECT CEIL(SUM(amount * 0.06)) AS tax
+	FROM transactions
+	WHERE no_tax = FALSE and MONTH(date) IN ('01', '02', '03') and direction = 'in';
+
+
+ЗАДАНИЕ
+Получите количество сотрудников каждого возраста. В первом столбце выборки выведете возраст, а во втором количество. 
+Имя второго столбца — clients. Данные отсортируйте по возрасту в порядке убывания.
+
+	SELECT 
+			age,
+			count(id) as clients
+	FROM users
+	GROUP BY age
+	ORDER BY 1 DESC;
+
+
+ЗАДАНИЕ
+В таблице products хранятся товары в разных категориях. За категории отвечает столбец category_id, который хранит номер категории в другой таблице. 
+Получите среднюю стоимость товаров в каждой из категориий. В первой колонке итоговой таблицы выведите категорию, 
+а в во втором среднюю цену округленную до двух знаков после точки. Имя второго столбца — avg_price.
+Учитывайте только товары, которые есть в наличии. Отсортируйте результаты по цене.
+
+	SELECT  category_id,
+			ROUND(AVG(price), 2) AS avg_price
+	FROM products
+	WHERE count > 0
+	GROUP BY category_id
+	ORDER BY 2;
+
+
+ЗАДАНИЕ
+Получите сумму заказов за каждый год. Данные должны быть отсортированы в хронологическом порядке по году. 
+В первом столбце итоговой таблицы выведете год (имя нового столбца year), а во втором сумму (income). Учитывайте только выполненные заказы.
+
+	SELECT 
+		   YEAR(date) AS year, 
+		   SUM(amount) AS income
+	FROM orders
+	WHERE status = 'success'
+	GROUP BY YEAR(date)
+	ORDER BY YEAR(date);
+
+
+ЗАДАНИЕ
+Получите сумму и количество заказов в каждом месяце. Данные должны быть отсортированы в хронологическом порядке по году и месяцу.
+В первом столбце итоговой таблицы выведете год, во втором — номер месяца, в третьем — сумму, а в четвертом — количество заказов. 
+Имена столбцов (по порядку): year, month, income, orders. Учитывайте только завершенные заказы.
+
+	SELECT 
+		   YEAR(date) year,
+		   MONTH(date) month,
+		   SUM(amount) income,
+		   COUNT(amount) orders        
+	FROM  orders
+	WHERE status = 'success'
+	GROUP BY 1, 2
+	ORDER BY 1, 2;
+
+
+ЗАДАНИЕ
+В таблице products содержатся данные о товарах с привязками к категориям (category_id). 
+Получите id категорий и количество товаров на складе для каждой из категорий. Выведите только категории в которых есть товары.
+Данные отсортируйте по количеству товаров. В итоговой таблице должно быть два столбца: category_id и products.
+
+	SELECT 
+		category_id,
+		SUM(count) AS products
+	FROM products
+	GROUP BY 1
+	HAVING SUM(count) > 0
+	ORDER BY 2;
+
+
+ЗАДАНИЕ
+В таблице deals содержится список сделок. Чтобы компания нормально функционировала она должна совершать сделок на 300 000 рублей в месяц. 
+Но не во все месяцы это получается. Получите список месяцев, в которых не удалось преодолеть порог в 300 тыс. 
+Итоговая таблица должна состоять из трех столбцов: year — год, month — номер месяца, amount — сумма сделок.
+
+	SELECT
+		YEAR(date) as year,
+		MONTH(date) as month,
+		SUM(amount) as amount
+	FROM deals
+	GROUP BY 1, 2
+	HAVING SUM(amount) < 300000;
+
+
+ЗАДАНИЕ
+В таблице bus_logs хранятся данные о прибытии автобусов на остановки. В поле diff содержится разница в секундах относительно контрольного времени прибытия.
+Положительные значения говорят о том, что автобус прибыл рано, отрицательные, о том, что он опоздал, 0 – приехал вовремя.
+Получите список водителей, которые в среднем опаздывают или опережают график на 30 секунд и более.
+Итоговая таблица должна состоять из двух колонок: driver_id с номером водителя и avg_diff со средним отклонением. 
+Среднее отклонение следует округлить до целого числа. 
+
+	SELECT
+		driver_id,
+		ROUND(AVG(ABS(diff))) as avg_diff
+	FROM bus_logs
+	GROUP BY driver_id
+	HAVING  ROUND(AVG(ABS(diff))) >= 30;
+
+
+ЗАДАНИЕ
+В таблице deals содержится список сделок. Получите из таблицы следующие данные:
+- user_id — идентификатор пользователя;
+- deals — количество сделок сотрудника
+- sum_amount — сумма платежей по сделкам;
+- max_amount — максимальный платеж.
+Учитывайте только закрытые сделки. Информацию выводите только для тех сотрудников, которые закрыли 3 и более сделок
+
+	SELECT 
+		user_id,
+		COUNT(id) as deals,
+		SUM(amount) as sum_amount,
+		MAX(amount) as max_amount
+	FROM deals
+	WHERE status = 'closed'
+	GROUP BY 1
+	HAVING COUNT(id) >= 3;
+
+
+ЗАДАНИЕ
+Получите с помощью UNION из таблиц bank_transactions и cashbox_transactions данные обо всех транзакциях клиента 56. Выведите три столбца:
+- date — дату транзакции в формате ДД.ММ.ГГ;
+- amount — величину транзакции;
+- payment_type — вид платежа: «bank» для банковских транзакций и «cash» для наличности.
+
+	SELECT  
+	   DATE_FORMAT(date, '%d.%m.%y') as date,
+	   amount,
+	   'bank' as payment_type 
+	FROM bank_transactions 
+	WHERE client_id = 56
+	UNION
+	SELECT
+	   DATE_FORMAT(date, '%d.%m.%y'),
+	   amount,
+	   'cash'
+	FROM  cashbox_transactions 
+	WHERE client_id = 56;
+
+
+ЗАДАНИЕ
+После слияния двух компаний, отделу поручили объединение баз данных. Слейте users и members в единую таблицу со следующими столбцами:
+- id — идентификатор пользователя. Так как идентификаторы пользователей в таблицах одинаковые, 
+       то примените к ним следующую формулу id * 10 + N, где N – равен одному для таблицы users и двум для members.
+- first_name — имя пользователя. Используйте оригинальное значение из таблицы users и извлеките имя из поля name таблицы members.
+- last_name — фамилия пользователя. Используйте оригинальное значение из таблицы users и извлеките фамилию из поля name таблицы members.
+- age — возраст пользователя. Используйте оригинальное значение из таблицы users и NULL для данных из members.
+- birthday — день рождения пользователя. Используйте оригинальное значение из таблицы members и NULL для данных из users.
+- sex — пол пользователя.
+
+
+	SELECT
+		id * 10 + 1 as id,
+		first_name, 
+		last_name,
+		age,
+		NULL as  birthday,
+		sex
+	FROM  users
+	UNION
+	SELECT 
+		id * 10 + 2,
+		SUBSTRING_INDEX(name, ' ', 1),
+		SUBSTRING_INDEX(name, ' ', -1),
+		NULL,
+		birthday,
+		sex    
+	FROM members;
+ 
+ 
+ 
+ЗАДАНИЕ
+Каждый регион ведет базу автомобилей и их номеров в своей собственной уникальной базе.
+Ваша задача — объединить таблицы из разных регионов так, чтобы получилась таблица со следующий структурой:
+- number — номер автомобиля в формате а111аа.
+- region — регион регистрации автомобиля (целое число).
+- mark — марка автомобиля.
+- model — модель автомобиля.
+
+
+	SELECT
+		  lower(LEFT(number, 6)) AS number,
+		  78 AS region,
+		  mark,
+		  model 
+	FROM cars
+	UNION
+	SELECT
+		  lower(number),
+		  39,
+		  mark,
+		  model
+	FROM region39
+	UNION
+	SELECT
+		  lower(number),
+		  region,
+		  mark,
+		  model 
+	FROM avto
+	UNION
+	SELECT
+		  lower(LEFT(number, 6)),
+		  55,
+		  SUBSTRING_INDEX(car, ' ', 1),
+		  SUBSTRING_INDEX(car, ' ', -1)
+	FROM autos;
+
+
+ЗАДАНИЕ
+В целях оптимизации производительности в базе данных есть две таблицы для хранения объявлений: advs и closed_advs, 
+в первой хранятся активные объявления, а во второй неактивные. Основная часть запросов приходится на advs, 
+но когда пользователь заходит в личный кабинет, то видит все свои объявления из обеих таблиц.
+Объедините обе таблицы с помощью UNION и получите данные для пользователя с идентификатором 45. 
+Выведите колонки id, category_id, date, text, а также status (статус объявления). 
+Для открытых объявлений в поле status укажите «opened» а для закрытых — «closed».
+Итоговую таблицу отсортируйте по дате, а затем по id.
+
+   (
+	SELECT
+			id, 
+			category_id, 
+			date, 
+			text, 
+			'opened' AS status
+	FROM advs
+	WHERE user_id = 45
+	UNION
+	SELECT
+			id, 
+			category_id, 
+			date, 
+			text, 
+			'closed' 
+	FROM closed_advs
+	WHERE user_id = 45
+	  )
+	ORDER BY date, id;
+
+
+ЗАДАНИЕ
+Объедините с помощью UNION данные из таблиц bank_transactions, cashbox_transactions и paypal_transactions. 
+Выведите три столбца:
+- date — дату и время транзакции;
+- amount — сумму транзакции;
+- pt — вид платежа: «bank» для банковских транзакций и «cash» для наличности и «paypal» для платежей в системе PayPal.
+Итоговые данные отсортируйте по дате в обратном хронологическом порядке.
+
+  (
+	SELECT
+			date, 
+			amount, 
+			'bank' as pt 
+	FROM bank_transactions
+	UNION 
+	SELECT
+			date, 
+			amount, 
+			'cash'
+	FROM cashbox_transactions 
+	union 
+	SELECT
+			date, 
+			amount, 
+			'paypal'
+	FROM paypal_transactions
+	   )
+	ORDER BY date desc;
+
+
+ЗАДАНИЕ
+На главной странице сайта выводится ТОП-10 компьютерных игр. Чтобы вывод был разнообразным — берут по две самых популярных игры из 5 категорий, 
+а затем сортируют полученные данные по рейтингу в обратном порядке. Строки с одинаковым рейтингом отсортируйте по id.
+Получите из таблицы games данные для вывода на главную страницу сайта для категорий: 1 - Action, 2 - RPG, 3 - Adventure, 4 - Strategy и 5 - Shooter. 
+Выведите поля id, name, rating и genre, где genre — название категории.
+
+	(SELECT id, 
+		   name, 
+		   rating, 
+		   'Action' as genre 
+	FROM games 
+	WHERE category_id = 1 
+	ORDER BY rating desc 
+	LIMIT 2)
+	
+	UNION	
+	
+	(SELECT id, 
+		   name, 
+		   rating, 
+		   'RPG' as genre 
+	FROM games 
+	WHERE category_id = 2 
+	ORDER BY rating desc 
+	LIMIT 2)
+	
+	UNION	
+	
+	(SELECT id,
+		   name,
+		   rating,
+		   'Adventure' as genre 
+	FROM games 
+	WHERE category_id = 3 
+	ORDER by rating desc 
+	LIMIT  2)
+	
+	UNION
+	
+	(SELECT id, 
+		   name, 
+		   rating, 
+		   'Strategy' as genre 
+	FROM games 
+	WHERE category_id = 4 
+	ORDER BY rating desc 
+	LIMIT 2)
+	
+	UNION
+	
+	(SELECT id, 
+		   name, 
+		   rating, 
+		   'Shooter' as genre 
+	FROM games 
+	WHERE category_id = 5 
+	ORDER BY rating desc 
+	LIMIT 2)
+	
+	ORDER BY rating desc, id;
+
+
+
+ЗАДАНИЕ
+Платежи клиентов в базе данных хранятся в трех таблицах:
+1. bank_transactions — прямые платежи на расчетный счет,
+2. cashbox_transactions — платежи наличными в кассу организации,
+3. paypal_transactions — платежи через сервис PayPal.
+Получите виды платежей и суммы по каждому виду. Виды платежей выведите в колонке type: «bank» для банковских транзакций, 
+«cash» для наличности и «paypal» для платежей в системе PayPal. Суммы платежей в колонке sum_amount. Итоговые данные отсортируйте по сумме.
+
+   (
+	SELECT
+          'bank' as type,
+           SUM(amount) as sum_amount
+    FROM bank_transactions
+    UNION
+    SELECT
+          'cash',
+           SUM(amount) 
+    FROM cashbox_transactions
+    UNION
+    SELECT
+          'paypal',
+           SUM(amount) 
+    from paypal_transactions
+	   )       
+    ORDER BY sum_amount;
+
+
+ЗАДАНИЕ
+Платежи клиентов в базе данных хранятся в трех таблицах:
+1. bank_transactions — прямые платежи на расчетный счет,
+2. cashbox_transactions — платежи наличными в кассу организации,
+3. paypal_transactions — платежи через сервис PayPal.
+Получите суммы входящих платежей по всем таблицам с разбивкой по годам и месяцам. 
+Итоговая таблица должна содержать 3 столбца: year, month, month_amount. Итоговые данные отсортируйте по году и месяцу.
+
+	SELECT
+		t.year, 
+		t.month, 
+		SUM(t.amount) as month_amount
+	FROM 
+		 (
+			SELECT YEAR(date) as year,
+				   month(date) as month,
+				   amount
+			FROM bank_transactions				   
+			UNION			
+			SELECT YEAR(date) as year,
+				   month(date) as month,
+				   amount
+			FROM cashbox_transactions				
+			UNION 			
+			SELECT YEAR(date) as year,
+				   month(date) as month,
+				   amount 
+			FROM paypal_transactions       
+		) AS t		
+	GROUP BY 1,2
+	ORDER BY  1,2;  
+
+
+ЗАДАНИЕ
+Платежи клиентов в базе данных хранятся в трех таблицах:
+1. bank_transactions — прямые платежи на расчетный счет,
+2. cashbox_transactions — платежи наличными в кассу организации,
+3. paypal_transactions — платежи через сервис PayPal.
+Получите общую сумму всех платежей клиентов. Колонку с результатом назовите all_money.
+
+	SELECT
+		 SUM(t.amount) as all_money
+	FROM 
+		(
+			SELECT YEAR(date) as year,
+				   month(date) as month,
+				   amount
+			FROM bank_transactions                
+			UNION        
+			SELECT YEAR(date) as year,
+				   month(date) as month,
+				   amount
+			FROM cashbox_transactions                
+			UNION         
+			SELECT YEAR(date) as year,
+				   month(date) as month,
+				   amount 
+			FROM paypal_transactions       
+		 ) AS t;
+ 

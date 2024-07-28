@@ -1,0 +1,1061 @@
+
+В данном блокноте содержатся тренировочные материалы по созданию, чтению, обновлению, удалению таблиц, индексов, 
+установке первичных/внешних ключей / полнотекстовых индексов и тд.
+
+
+ЗАДАНИЕ 
+Добавьте в таблицу products новый товар — «Xbox», стоимостью 30000 рублей в количестве трех штук.
+
+	INSERT INTO products (id, name, count, price)
+	VALUES (7, 'Xbox', 3, 30000)
+
+
+ЗАДАНИЕ
+Добавьте в таблицу products новый товар — «iMac 21», стоимостью 100100 рублей. Товар пока не завезли на склад.
+
+	INSERT INTO  products  (id, name, count, price)
+	VALUES (8, 'iMac 21', 0, 100100 )
+
+
+ЗАДАНИЕ
+Добавьте в таблицу users нового пользователя Никиту Петрова. Дату рождения не указывайте. Используйте ключевое слово SET.
+
+	INSERT INTO users 
+	SET id = 10, first_name = 'Никита', last_name = 'Петров'
+
+
+ЗАДАНИЕ
+Добавьте одним SQL запросом в таблицу products следующие товары:
+- iPhone 7, цена 59990, 1 шт., - iPhone 8, цена 64990, 3 шт.,  - iPhone X, цена 79900, 2 шт.	
+
+	INSERT INTO products (id, name, count, price)
+	VALUES  (8, 'iPhone 7', 1, 59990),
+			(9, 'iPhone 8', 3, 64990),
+			(10, 'iPhone X', 2, 79900)
+
+
+ЗАДАНИЕ
+В таблицу products внесли данные с ошибкой (id-7), вместо iMac в наименовании написали IMAC. Исправьте ошибку.
+
+	UPDATE products
+	SET name = 'IMAC' 
+	WHERE id = 7
+
+
+ЗАДАНИЕ
+Проставьте всем заказам без статуса (NULL) статус "new".
+	UPDATE orders  
+	SET status = 'new' 
+	WHERE status is null
+	
+
+ЗАДАНИЕ
+В поле amount в таблице orders должно стоять число, которое равно произведению цены на количество. 
+Из-за сбоя в системе некоторые значения суммы получили 0 или NULL. Обновите таблицу, чтобы в поле amount были правильные значения.
+
+	UPDATE orders 
+	SET amount = sum * products_count
+	WHERE amount = 0 OR amount IS NULL	
+
+
+ЗАДАНИЕ
+Увеличьте цену 5 самых дешевых товаров на 5%.
+
+	UPDATE products 
+	SET price = price + price * 0.05 
+	ORDER BY price    -- asc 
+	LIMIT 5
+
+
+ЗАДАНИЕ
+Уменьшите цену 5 самых дорогих товаров на 5000 рублей.
+
+	UPDATE products 
+	SET price = price - 5000 
+	ORDER BY price desc 
+	LIMIT 5
+	
+	
+ЗАДАНИЕ
+Имеется таблица с товарами в магазине. В поле count содержится текущее количество товаров на полках и на складе.
+В магазин привезли 2 упаковки Альпен Голд и 2 упаковки Твикс. В каждой упаковке по 20 шоколадных батончиков. 
+Обновите данные так, чтобы они отражали количество шоколадок с учетом нового привоза.
+
+	UPDATE products 
+	SET count = count + 40
+	WHERE name in ('Альпен Голд', 'Твикс')
+
+
+ЗАДАНИЕ
+Удалите из таблицы products все товары, которых нет на складе.
+
+	DELETE FROM products 
+	WHERE count = 0
+
+
+ЗАДАНИЕ
+Удалите из таблицы cars все автомобили начиная с 2010 года и старше.
+
+	DELETE FROM cars 
+	WHERE year <= 2010
+
+
+ЗАДАНИЕ
+Удалите из таблицы cars все корейские автомобили, а также все автомобили мощностью меньше 80 лс.
+
+	DELETE FROM cars  
+	WHERE country = 'KR' OR power < 80
+
+
+ЗАДАНИЕ
+Удалите из таблицы cars все японские автомобили мощностью менее 80 и более 130 лс. (включая крайние значения).
+
+	DELETE FROM cars 
+	WHERE country = 'JP' AND (power <= 80 OR power >= 130 ) 
+
+
+ЗАДАНИЕ
+Создайте таблицу orders для хранения заказов в магазине и добавьте в нее изображенные данные. 
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id – тип INT. Только положительные числа, не NULL.
+- product_id – для хранения номера товара. Только положительные числа от 0 до 4294967295.
+- sale – скидка. Целое положительное число от 0 до 100.
+- amount – сумма заказа. Денежный тип. Максимальная сумма заказа 999999.99 рублей.
+
+	CREATE TABLE orders 
+						(
+						 id INT UNSIGNED NOT NULL, 
+						 product_id INT UNSIGNED, 
+						 sale TINYINT UNSIGNED, 
+						 amount DECIMAL(8, 2)  
+							);
+	INSERT INTO orders (id, product_id, sale, amount)    
+	VALUES  (1, 245, 0, 230.50), 
+			(2, 17, 15, 999999.99), 
+			(3, 145677, 21, 1240.00);
+
+
+ЗАДАНИЕ
+оздайте таблицу films с информацией о фильмах и добавьте в нее изображенные данные. 
+Выберете оптимальные поля для хранения данных в соответствии с условиями:
+- id типа INT, только положительное число, не может принимать NULL.
+- name – символьное поле длиной 100.
+- rating – рейтинг, вещественное число. Принимает положительные значения от 0 до 10.
+- country – страна фильма. Символьное поле, содержащее ровно 2 символа.
+
+	CREATE TABLE films 
+						(
+						 id INT UNSIGNED NOT NULL,
+						 name VARCHAR(100),
+						 rating FLOAT UNSIGNED,
+						 country varchar(2)              
+							);
+
+	INSERT INTO films (id, name, rating, country)
+	VALUES  (1, 'Большая буря', 3.45, 'RU'), 
+			(2, 'Игра', 7.5714, 'US'), 
+			(3, 'Война', 10.0, 'RU')
+
+
+ЗАДАНИЕ	
+Создайте таблицу files для хранения информации о файлах и добавьте в нее изображенные данные. 
+Выберете оптимальные поля исходя из условий ниже:
+- id — типа INT, только положительные числа, не NULL.
+- filename — текстовое поле длиной 255 символов для хранения имени файла.
+- size — целочисленное поле для хранения размера файла в байтах. Только положительные числа. Могут храниться данные до 100 Гб.
+- filetype — поле для хранения типа файла, строка до 3 символов.
+
+	CREATE TABLE files 
+						(
+							id INT UNSIGNED NOT NULL, 
+							filename VARCHAR(255), 
+							size BIGINT UNSIGNED,
+							filetype VARCHAR(3)
+								);
+
+	INSERT INTO files (id, filename, size, filetype)
+	VALUES  (1, 'big_archive.zip', 81604378624, 'zip'), 
+			(2, 'movie_37.mp4', 7838315315, 'mp4'), 
+			(3, 'music007.mp3', 5242880, 'mp3')
+			
+
+ЗАДАНИЕ
+Создайте таблицу apartments для хранения информации о квартирах на сайте жилищного комплекса и добавьте в нее изображенные данные. 
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное, не может принимать NULL.
+- image — поле для хранения пути до изображения, строка не более 100 символов.
+- price — цена не более 99 999 999. Целое положительное число.
+- square — площадь квартиры. Не более 150 квадратных метров. Целое положительное число. 
+
+	CREATE TABLE apartments 
+							(
+							 id  INT UNSIGNED NOT NULL, 
+							 image  VARCHAR(100), 
+							 price  INT UNSIGNED, 
+							 square  TINYINT UNSIGNED  
+							  );
+	INSERT INTO apartments
+	VALUES (1, '/apartments/1/cover.jpg', 5250000, 90), 
+		   (2, '/apartments/2/cover-3.jpg', 7500000, 103), 
+		   (3, '', 2300000, 56);
+
+
+ЗАДАНИЕ
+На сайте действует следующая система: сперва сотрудник заносит в таблицу URL-адрес фотографии в интернете, 
+а после скрипт на языке Python скачивает файл из сети на жесткий диск и добавляет в эту же таблицу путь до него.
+Создайте таблицу files, которая поможет сотруднику и скрипту выполнить свои задачи. Таблица должна содержать следующие поля:
+- id — целое положительное, не может принимать NULL
+- file_url — url файла, строка длиной до 500 символов.
+- file_path — путь до файла на жестком диске, строка до 200 символов.
+- size — размер скачанного файла в байтах, целое положительное. Размер файла может достигать 100 Гб.
+Добавьте в созданную таблицу изображенные данные.
+
+	CREATE TABLE files
+						(
+						 id  INT UNSIGNED NOT NULL,
+						 file_url  VARCHAR(500),
+						 file_path VARCHAR(200) ,
+						 size BIGINT UNSIGNED   
+						  );
+						
+	INSERT INTO files (id, file_url, file_path, size) 
+	VALUES  (1, 'http://archives.com/archives/big_archive.zip', 'files/2018/02/archive.zip', 81604378624), 
+			(2, 'http://movies.com/movies/movie.mp4', '', 0), 
+			(3, 'http://movies.com/best-songs/song.mp3', 'files/2018/03/song.mp3', 5242880)
+
+
+ЗАДАНИЕ
+Создайте таблицу users для хранения информации о пользователях сайта и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id – идентификатор, целое положительное, не может принимать NULL;
+- email – адрес электронной почты, строка не более 100 символов;
+- date_joined – дата регистрации (достаточно хранить дату, без времени)
+- last_activity – дата и время последней активности (с точностью до секунд).
+
+	CREATE TABLE users 
+						(
+						 id INT UNSIGNED NOT NULL,
+						 email VARCHAR(100),
+						 date_joined DATE,
+						 last_activity DATETIME   
+						  );
+
+	INSERT INTO users (id, email, date_joined, last_activity)
+	VALUES  (1, 'user1@domain.com', '2014-12-12', '2016-04-08 12:34:54'), 
+			(2, 'user2@domain.com', '2014-12-12', '2017-02-13 11:46:53'), 
+			(3, 'user3@domain.com', '2014-12-13', '2017-04-04 05:12:07');
+
+
+ЗАДАНИЕ
+Создайте таблицу temperature для хранения записей о температуре и добавьте в нее изображенные данные. 
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id – идентификатор, целые положительные числа, не NULL;
+- city_id – идентификатор города, целые положительные числа;
+- temperature – температура, целое число в диапазоне от -100 до 100 градусов.
+- wind_speed – целое положительное число для хранения скорости ветра. Историческая максимальная скорость ветра была 113 м/с.
+- mdate – дата и время измерения (с точностью до секунд).
+
+	CREATE TABLE temperature 
+								(
+								   id INT UNSIGNED NOT NULL, 
+								   city_id INT UNSIGNED, 
+								   temperature TINYINT, 
+								   wind_speed TINYINT UNSIGNED, 
+								   mdate DATETIME                               
+								  );
+							   
+	INSERT INTO temperature
+	VALUES  (1, 456, 17, 7, '2017-02-08 12:00:00'),
+			(2, 456, 19, 6, '2017-02-08 12:10:00'),
+			(3, 456, 20, 6, '2017-02-08 12:20:00'),
+			(4, 471, -7, 12, '2017-02-08 12:20:01'),
+			(5, 44, -43, 17, '2017-02-08 12:23:12');
+
+
+ЗАДАНИЕ
+Создайте таблицу arrival для хранения времени прихода сотрудников на работу и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id – идентификатор, целое положительное, не может принимать NULL;
+- user_id – идентификатор пользователя, целое положительное;
+- a_date – дата прихода;
+- a_time – время прихода.
+
+	CREATE TABLE arrival 
+							(
+								id INT UNSIGNED NOT NULL,
+								user_id INT UNSIGNED,
+								a_date DATE,
+								a_time TIME
+							  );
+	INSERT INTO arrival (id, user_id, a_date, a_time)
+	VALUES  (1, 10, '2017-03-09', '08:45:41'), 
+			(2, 12, '2017-03-09', '08:46:12'), 
+			(3, 7, '2017-03-09', '08:53:01'), 
+			(4, 31, '2017-03-09', '09:01:17');
+
+
+ЗАДАНИЕ
+Создайте таблицу cars для хранения списка автомобилей дилерского центра и добавьте в нее изображенные данные. 
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id – идентификатор, целое положительное, не может принимать NULL;
+- mark – марка автомобиля, строка до 20 символов;
+- model – модель автомобиля, строка до 20 символов;
+- year – год выпуска, используйте тип YEAR;
+- mileage – пробег, целое число от 0 до 100 000.
+
+	CREATE TABLE cars 
+						(
+						   id INT UNSIGNED NOT NULL,
+						   mark VARCHAR(20),
+						   model VARCHAR(20),
+						   year YEAR,
+						   mileage MEDIUMINT UNSIGNED
+						  );
+	INSERT INTO cars (id, mark, model, year, mileage)
+	VALUES  (1, 'Toyota', 'Camry', 2015, 32000), 
+			(2, 'Mazda', 'CX-5', 2016, 17000), 
+			(3, 'Nissan', 'Patrol', 2016, 60000);
+
+
+ЗАДАНИЕ
+Создайте таблицу users и добавьте в нее изображенные данные. Выберите оптимальные поля для хранения данных в соответствии с условиями: 
+- id — целое положительное, не может принимать NULL.
+- email — строка для хранения электронных адресов пользователей длиной до 100 символов, не может принимать NULL.
+	CREATE TABLE users 
+						(
+						   id INT UNSIGNED NOT NULL,
+						   email VARCHAR(100) NOT NULL
+						  );
+
+	INSERT INTO users
+	VALUES 	(1, 'user1@domain.com'),
+			(2, 'user2@domain.com'),
+			(3, 'user3@domain.com'),
+			(4, 'user4@domain.com');
+
+
+ЗАДАНИЕ
+Создайте таблицу products и добавьте в нее изображенные данные. Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — номер товара, целое положительное, не может принимать NULL.
+- name — название товара до 120 символов, не может принимать NULL.
+- category_id — категория товара, целое положительное, может принимать NULL.
+- price — цена, денежный тип из 10 знаков, из них два после запятой. Не может принимать NULL.
+
+	CREATE TABLE products 
+							(
+							   id INT UNSIGNED NOT NULL,
+							   name VARCHAR(120) NOT NULL,
+							   category_id INT UNSIGNED NULL,
+							   price DECIMAL(10, 2) NOT NULL 
+							  );
+	INSERT INTO products (id, name, category_id, price)
+	VALUES  (1, 'Подгузники (12 шт)', 3, 700.00), 
+			(2, 'Подгузники (24 шт)', 3, 1250.00), 
+			(3, 'Спиннер', NULL, 250.40), 
+			(4, 'Пюре слива', 4, 47.50)
+
+
+ЗАДАНИЕ
+Создайте таблицу articles для хранения данных о статьях и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное, NULL запрещен.
+- name — название статьи, строка до 80 символов.
+- text — текст статьи.
+- state — статус статьи. Поле из 3 вариантов: draft (черновик), correction (корректура), public (опубликована).
+
+	CREATE TABLE articles
+							(
+							   id INT UNSIGNED NOT NULL,
+							   name VARCHAR(80),
+							   text TEXT,
+							   state ENUM('draft', 'correction', 'public')
+							  );
+	INSERT INTO articles (id, name, text, State)
+	VALUES  (1, 'Новое в Python 3.6', '', 'draft'), 
+			(2, 'Оптимизация SQL запросов', 'При больших объемах данных ...', 'correction'), 
+			(3, 'Транзакции в MySQL', 'По долгу службы мне приходится ...', 'public');
+
+
+ЗАДАНИЕ
+Создайте таблицу rooms для хранения номеров в отеле и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное. NULL запрещен.
+- number — номер комнаты, целое положительное. Всего в отеле 107 комнат. NULL запрещен.
+- beds — количество спальных мест. Выбор из 1+1, 2+1, 2+2. Можно выбрать только один вариант. NULL запрещен.
+- additional — дополнительные удобства в номере. Можно выбрать несколько вариантов из списка: conditioner, bar, fridge и wifi.
+
+	CREATE TABLE rooms 
+						   (
+							   id INT UNSIGNED NOT NULL,
+							   number TINYINT UNSIGNED NOT NULL,
+							   beds ENUM('1+1', '2+1', '2+2') NOT NULL,
+							   additional SET('conditioner', 'bar', 'fridge', 'wifi') 
+						      );
+	INSERT INTO rooms (id, number, beds, additional)
+	VALUES  (1, 10, '1+1', 'conditioner,bar,wifi'), 
+			(2, 12, '2+1', '' ), 
+			(3, 24, '2+2', 'fridge,bar,wifi');
+
+
+ЗАДАНИЕ
+Создайте таблицу orders для хранения заказов в интернет-магазине и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное. NULL запрещен.
+- user_id — идентификатор пользователя, который оформил заказ. Целое положительное, NULL запрещен.
+- amount — стоимость заказа. DECIMAL из 10 цифр, 2 цифры после десятичной точки.
+- created — дата и время создания заказа. NULL запрещен.
+- state — статус заказа. Выбор из new, cancelled, in_progress, delivered, completed. Можно выбрать только один вариант.
+- options — дополнительные опции заказа. Можно выбрать несколько вариантов из списка: pack, fitting, call и intercom.
+
+	CREATE TABLE orders 
+						(
+							id INT UNSIGNED NOT NULL,
+							user_id INT UNSIGNED NOT NULL,
+							amount DECIMAL(10, 2),
+							created DATETIME NOT NULL,
+							state ENUM('new', 'cancelled', 'in_progress', 'delivered', 'completed'),
+							options SET('pack', 'fitting', 'call', 'intercom')
+						   );
+	INSERT INTO orders (id, user_id, amount, created, state, options)
+	VALUES  (456, 763, 14299.00, '2018-02-01 17:45:59', 'completed', 'pack,call'), 
+			(457, 1987, 249.50, '2018-02-01 18:23:04', 'delivered', 'pack,intercom'), 
+			(459, 78, 2300.12, '2018-02-01 22:12:09', 'in_progress', ''); 	 
+
+
+ЗАДАНИЕ
+Создайте таблицу orders для хранения списка заказов и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное.
+- user_id — идентификатор пользователя, который оформил заказ. Целое положительное, NULL запрещен.
+- amount — стоимость заказа. Целое положительное число не более 1 млн. NULL запрещен, по умолчанию 0.
+- created — дата и время создания заказа. NULL запрещен.
+- state — статус заказа. Выбор из new, cancelled, in_progress, delivered, completed. Можно выбрать только один вариант. NULL запрещен, по умолчанию new.
+
+	CREATE TABLE orders 
+							(
+								id INT UNSIGNED NOT NULL,
+								user_id INT UNSIGNED NOT NULL,
+								amount MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+								created DATETIME NOT NULL,
+								state ENUM('new', 'cancelled', 'in_progress', 'delivered', 'completed') NOT NULL DEFAULT 'new'
+							  );
+	INSERT INTO orders (id, user_id, amount, created, state)
+	VALUES  (1, 56, 5400, '2018-02-01 17:46:59', 'new'), 
+			(2, 90, 249, '2018-02-01 19:13:04', 'new'), 
+			(3, 78, 2200, '2018-02-01 22:43:09', 'new');
+
+
+ЗАДАНИЕ
+Создайте таблицу users для хранения списка пользователей сайта и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное.
+- first_name — имя, строка до 20 символов. NULL запрещен.
+- last_name — фамилия, строка до 20 символов. NULL запрещен.
+- patronymic — отчество, строка до 20 символов. NULL запрещен, по умолчанию пустая строка.
+- is_active — отметка об активности пользователя. Логическое поле, по умолчанию TRUE.
+- is_superuser — отметка администратора. Логическое поле, по умолчанию FALSE.
+
+	CREATE TABLE users 
+						   (
+							   id INT UNSIGNED NOT NULL,
+							   first_name VARCHAR(20) NOT NULL,
+							   last_name VARCHAR(20) NOT NULL,
+							   patronymic VARCHAR(20) NOT NULL DEFAULT '',
+							   is_active BOOL DEFAULT True,
+							   is_superuser BOOL DEFAULT False
+						      );
+	INSERT INTO users (id, first_name, last_name, patronymic, is_active, is_superuser)
+	VALUES  (1, 'Дмитрий', 'Иванов', '', TRUE, FALSE), 
+			(2, 'Анатолий', 'Белый', 'Сергеевич', TRUE, TRUE), 
+			(3, 'Андрей', 'Крючков', '', FALSE, FALSE);
+
+
+ЗАДАНИЕ
+Создайте таблицу products для хранения товаров в интернет магазине и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное.
+- category_id — категория, целое положительное. Может принимать NULL. По умолчанию NULL.
+- name — название, строка до 100 символов. NULL запрещен.
+- count — количество, целое положительное до 255. NULL запрещен, по умолчанию 0.
+- price — цена типа DECIMAL с 10 знаками, 2 из которых выделены для копеек. NULL запрещен, по умолчанию 0.00.
+
+	CREATE TABLE products 
+							(
+							   id INT UNSIGNED NOT NULL,
+							   category_id INT UNSIGNED DEFAULT NULL,
+							   name VARCHAR(100) NOT NULL,
+							   count TINYINT UNSIGNED NOT NULL DEFAULT 0,
+							   price DECIMAL(10, 2) NOT NULL DEFAULT 0.00                
+							  );
+	INSERT INTO products (id, category_id, name, count, price)
+	VALUES  (1, 1, 'Кружка', 5, 45.90), 
+			(2, 17, 'Фломастеры', 0, 78.00), 
+			(3, NULL, 'Сникерс', 12, 50.80);
+
+
+ЗАДАНИЕ
+Создайте таблицу logs для хранения логов посещения сайта и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- date — время посещения в формате DATETIME, NULL запрещен, по умолчанию должно проставляться время создания записи.
+- browser — название браузера, строка до 500 символов. NULL запрещен, по умолчанию пустая строка.
+- is_bot — отметка о том является ли посетитель ботом или нет. Логический тип, по умолчанию FALSE. NULL запрещен.
+
+	CREATE TABLE logs  
+						(
+							date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+							browser VARCHAR(500) NOT NULL DEFAULT '',
+							is_bot BOOL NOT NULL DEFAULT False
+						  );
+	INSERT INTO logs (date, browser, is_bot)
+	VALUES  ('2018-03-19 19:50:01', 'Chrome 64.0.1.417', FALSE), 
+			('2018-03-19 19:55:11', 'Firefox 55 (yandex bot)', True), 
+			('2018-03-19 19:56:12', 'Chrome 63.0.0.471', FALSE)
+
+ЗАДАНИЕ
+Создайте таблицу reviews с отзывами о компании Shultais Education и добавьте в нее изображенные данные.
+Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное.
+- user_id — идентификатор пользователя, который оставил отзыв. Целое положительное, NULL запрещен.
+- date — дата и время оставления отзыва, NULL запрещен, по умолчанию должно проставляться время создания записи.
+- course — курс, для которого оставлен отзыв. Выбор из python, sql, all. Можно выбрать только один вариант. NULL запрещен, по умолчанию — all.
+- text — текст отзыва, поле типа TEXT. NULL запрещен.
+- public — отметка о том является ли отзыв публичным. Логический тип, по умолчанию FALSE. NULL запрещен.
+
+	CREATE TABLE reviews 
+						(
+							id INT UNSIGNED NOT NULL,
+							user_id INT UNSIGNED NOT NULL,
+							date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+							course ENUM('python', 'sql', 'all') NOT NULL DEFAULT 'all',
+							text TEXT NOT NULL,
+							public BOOL NOT NULL DEFAULT False
+						  );
+	INSERT INTO reviews (id, user_id, date, course, text, public)
+	VALUES  (1, 817, '2018-01-11 19:50:01', 'python', 'Это прекрасная возможность получить новые очки в программировании., TRUE),
+			(2, 1289, '2018-02-16 08:55:11', 'python', 'Проект на мой взгляд отличный: 1. Короткие видеоролики без воды., TRUE),
+			(3, 2914, '2018-03-19 12:56:12', 'all', 'Хорошая затея. Но проект ещё нуждается в развитии.', TRUE);
+
+
+ЗАДАНИЕ  
+Создайте таблицу users и добавьте в нее изображенные данные. Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- id — идентификатор, целое положительное, первичный ключ без автоинкремента, NULL запрещен.
+- first_name — имя пользователя, строка до 50 символов.
+- last_name — фамилия пользователя, строка до 50 символов.
+- birthday — дата рождения. Пользователь может не указать день рождения и тогда в поле нужно хранить NULL.
+
+	CREATE TABLE users 
+						(
+							id INT UNSIGNED NOT NULL PRIMARY KEY,
+							first_name VARCHAR(50),
+							last_name VARCHAR(50),
+							birthday DATE
+						   );
+	INSERT INTO users (id, first_name, last_name, birthday)
+	VALUES  (1, 'Дмитрий', 'Иванов', NULL),
+			(2, 'Анатолий', 'Белый', NULL),
+			(3, 'Денис', 'Давыдов', '1995-09-08');
+
+
+ЗАДАНИЕ
+Создайте таблицу orders с автоинкрементальным первичным ключом id, полем state для хранения статуса заказа 
+и полем amount для хранения суммы заказа. Статус заказа умещается в строку длиной 8 символов, 
+а сумма заказа является денежным типом до 1 млн. с двумя знаками после десятичной точки (макс. допустимое число 999999.99).
+
+	CREATE TABLE orders 
+						(
+						   id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+						   state VARCHAR(8),
+						   amount DECIMAL(8, 2) 
+						   );
+	INSERT INTO orders (state, amount)
+	VALUES ('new', 1000.50),
+		   ('new', 3400.10),
+		   ('delivery', 7300.00);
+    
+ 
+ЗАДАНИЕ
+Создайте таблицу passports и добавьте в нее изображенные данные. Выберите оптимальные поля для хранения данных в соответствии с условиями:
+- series — символьного типа (максимум 4 символа). NULL запрещен.
+- number — символьного типа (максимум 6 символов). NULL запрещен.
+- user_id — беззнаковый INT. NULL запрещен.
+- date_issue — дата типа DATE
+Создайте первичный ключ по двум полям: series и number.		
+
+	CREATE TABLE passports 
+							(
+								series VARCHAR(4) NOT NULL,
+								number VARCHAR(6) NOT NULL,
+								user_id INT UNSIGNED NOT NULL,
+								date_issue DATE,
+								primary key (series, number)
+							   );
+	INSERT INTO passports (series, number, user_id, date_issue)
+	VALUES (3206, 147345, 15, '2006-08-12'),
+		   (3216, 147345, 234, '2016-09-23'),
+		   (2405, 147345, 1, '2015-01-07'),
+		   (5411, 147345, 15, '2008-03-03');
+
+
+ЗАДАНИЕ
+Создайте таблицу files для хранения данных о цифровых фильмах и добавьте в нее изображенные данные. 
+В таблице должны быть следующие поля:
+- id - идентификатор.
+- film_id — ссылка на фильм, беззнаковое целое, NULL запрещен. Ссылки на другие поля должны быть того же типа, что и сами поля. 
+  То есть film_id должно быть того же типа, что и id (в другой таблице).
+- size — размер файла в байтах. В магазине могут быть фильмы более 100 Гб. надо запретить добавлять в таблицу файлы отрицательного размера.
+- filename — название файла, символьное поле длиной 100 символов.
+
+	CREATE TABLE files 
+						(
+							id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+							film_id INT UNSIGNED NOT NULL,
+							size BIGINT UNSIGNED,
+							filename VARCHAR(100)
+						   );
+	INSERT INTO files (film_id, size, filename)
+	VALUES (356, 28668906700, 'silicon_valley_s02_1080p.zip'),
+		   (4514, 2684354560, 'dunkirk.mp4'),
+		   (87145, 734003200, 'milk.mp4');
+
+ЗАДАНИЕ
+Измените имя пользователя с первичным ключом 7 с «Иван» на «Дмитрий». Удалите из таблицы orders заказы с номерами 3, 4 и 7.
+	UPDATE users 
+	SET first_name = 'Дмитрий'
+	WHERE id = 7;
+	
+	DELETE FROM orders 
+	WHERE id in (3, 4, 7);
+
+
+ЗАДАНИЕ
+Создайте таблицу clients с указанными полями. Все уникальные ключи должны иметь те же имена, что и поля, для которых они создаются.
+- id — автоинкрементальный первичный ключ.
+- first_name — имя, строка до 50 символов. NULL запрещен.
+- last_name — фамилия, строка до 50 символов. NULL запрещен.
+- email — электронный адрес, строка до 100 символов. NULL запрещен, все значения уникальные.
+- passport — серия и номер паспорта, строка до 10 символов. NULL запрещен, все значения уникальные.
+
+	CREATE TABLE clients 
+                        (
+                           id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                           first_name VARCHAR(50) NOT NULL,
+                           last_name VARCHAR(50) NOT NULL,
+                           email VARCHAR(100) NOT NULL,
+                           passport VARCHAR(10) NOT NULL,
+                           UNIQUE KEY email(email),
+                           UNIQUE KEY passport(passport) 
+                          );
+
+
+ЗАДАНИЕ
+Создайте таблицу passports для хранения паспортов пользователей. Создайте уникальный ключ passport по двум полям: series и number.
+- id — автоинкрементальный первичный ключ.
+- user_id — идентификатор пользователя, беззнаковый INT, NULL запрещен.
+- series — серия паспорта, строка до 4 символов, NULL запрещен.
+- number — номер паспорта, строка до 6 символов, NULL запрещен.
+- state — статус паспорта. Поле выбора одного из 2 вариантов: active (активный), expired (истекший). NULL запрещен, по умолчанию active.
+
+	CREATE TABLE passports 
+							(
+								id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+								user_id INT UNSIGNED NOT NULL,
+								series VARCHAR(4) NOT NULL,
+								number VARCHAR(6) NOT NULL,
+								state ENUM('active', 'expired') NOT NULL DEFAULT 'active',
+								UNIQUE KEY passport (series, number)
+							    );
+
+
+ЗАДАНИЕ
+Создайте таблицу posts для хранения постов пользователей на сайте. В рамках всего сайта slug могут повторяться, 
+но для каждого конкретного пользователя значения slug уникальны. Создайте подходящий под это условие ключ с именем uslug.
+- id — автоинкрементальный первичный ключ.
+- user_id — идентификатор пользователя, беззнаковый INT, NULL запрещен.
+- name — название поста, строка до 100 символов, NULL запрещен.
+- pub_date — дата и время публикации. По умолчанию NULL (означает, что пост еще не опубликован).
+- slug — идентификатор поста для генерации URL, строка до 50 символов, NULL запрещен.
+
+	CREATE TABLE posts 
+						(
+						 id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT, 
+						 user_id INT UNSIGNED NOT NULL, 
+						 name VARCHAR(100) NOT NULL, 
+						 pub_date DATETIME DEFAULT NULL, 
+						 slug VARCHAR(50) NOT NULL,
+						 UNIQUE KEY uslug(user_id, slug)
+						   );
+
+
+ЗАДАНИЕ
+Создайте таблицу products для хранения данных о товарах в магазине. В рамках всего сайта slug могут повторяться, 
+но для каждой конкретной категории значения slug уникальны. Создайте подходящий под это условие ключ с именем category_slug.
+
+- id — автоинкрементальный первичный ключ.
+- category_id — идентификатор категории, беззнаковый INT, по умолчанию NULL.
+- name — название товара, строка до 100 символов, NULL запрещен.
+- slug — идентификатор товара для генерации URL, строка до 50 символов, NULL запрещен.
+- ean13 — штрих-код из 13 символов. Только уникальные значения. NULL запрещен.
+
+
+	CREATE TABLE products 
+							(id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+							 category_id INT UNSIGNED DEFAULT NULL,
+							 name VARCHAR(100) NOT NULL,
+							 slug VARCHAR(50) NOT NULL,
+							 ean13 VARCHAR(13) NOT NULL UNIQUE,
+							 UNIQUE KEY category_slug(category_id, slug)
+							   );
+
+
+ЗАДАНИЕ     
+Создайте таблицу orders со следующими полями:
+- id — автоинкрементальный первичный ключ.
+- user_id — идентификатор пользователя, беззнаковый INT, NULL запрещен.
+- state — статус заказа, строка до 8 символов. По умолчанию new. NULL запрещен.
+- amount — целое положительное для хранения чисел не более 1 млн. NULL запрещен. По умолчанию 0.
+Создайте два обычных индекса для полей user_id и state. Имена индексов должны совпадать с именами столбцов.
+
+	CREATE TABLE orders 
+						(id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+						 user_id INT UNSIGNED NOT NULL,
+						 state VARCHAR(8) NOT NULL DEFAULT 'new',
+						 amount MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+						 INDEX user_id(user_id),
+						 INDEX state(state)
+						   );
+
+
+ЗАДАНИЕ
+Создайте таблицу products для хранения товаров в интернет магазине:
+- id — первичный ключ.
+- category_id — категория, целое положительное. Может принимать NULL. По умолчанию NULL.
+- name — название, строка до 100 символов. NULL запрещен.
+- count — количество, целое положительное до 255. NULL запрещен, по умолчанию 0.
+- price — цена типа DECIMAL с 10 знаками, 2 из которых выделены для копеек. NULL запрещен, по умолчанию 0.00.
+Добавьте в таблицу два простых индекса так, чтобы ускорить поиск по категории и по цене.
+Названия индексов должны быть такими же, как и названия полей, по которым эти индексы строятся.
+
+	CREATE TABLE products 
+							(
+								id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+								category_id INT UNSIGNED,
+								name VARCHAR(100) NOT NULL,
+								count TINYINT UNSIGNED NOT NULL DEFAULT 0,
+								price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+								INDEX category_id(category_id),
+								INDEX price (price)
+							   );
+
+
+ЗАДАНИЕ		
+Создайте таблицу passports для хранения паспортов пользователей.
+-id — автоинкрементальный первичный ключ.
+- user_id — идентификатор пользователя, беззнаковый INT, NULL запрещен.
+- series — серия паспорта, строка до 4 символов, NULL запрещен.
+- number — номер паспорта, строка до 6 символов, NULL запрещен.
+- state — статус паспорта. Поле выбора одного из 2 вариантов: active (активный), expired (истекший). 
+          NULL запрещен, по умолчанию active.
+Создайте уникальный ключ passport по двум полям: series и number.
+Добавьте два простых индекса, чтобы ускорить поиск данных по серии и номеру паспорта.
+Названия индексов сделайте такими же, как и поля, для которых эти индексы создаются.
+
+	CREATE TABLE passports 
+							(
+								id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT, 
+								user_id INT UNSIGNED NOT NULL, 
+								series VARCHAR(4) NOT NULL, 
+								number VARCHAR(6) NOT NULL, 
+								state ENUM('active', 'expired') NOT NULL DEFAULT 'active',                            
+								UNIQUE KEY passport(series, number),
+								INDEX series(series),
+								INDEX number(number)
+							    );
+
+
+ЗАДАНИЕ
+Создайте таблицу orders для хранения списка заказов со следующими полями:
+- id — автоинкрементальный первичный ключ.
+- user_id — идентификатор пользователя, беззнаковый INT, NULL запрещен.
+- city_id — идентификатор города, беззнаковый INT, NULL запрещен.
+- state — статус заказа. Выбор из new, cancelled, delivered, completed. Можно выбрать только один вариант. 
+          NULL запрещен. По умолчанию new.
+- amount — целое положительное для хранения чисел не более 1 млн. NULL запрещен. По умолчанию 0.
+Самый популярный запрос к этой таблице: SELECT * FROM orders WHERE city_id = 5 AND state = "new";
+Добавьте составной индекс с именем main_search, чтобы данный запрос выполнялся максимально быстро.
+Также добавьте простой индекс по полю user_id.
+
+	CREATE TABLE orders
+						(
+							id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+							user_id INT UNSIGNED NOT NULL,
+							city_id INT UNSIGNED NOT NULL,
+							state ENUM('new', 'cancelled', 'delivered', 'completed') NOT NULL DEFAULT 'new',
+							amount MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+							INDEX user_id(user_id),
+							INDEX main_search(city_id, state)
+						   );
+
+
+ЗАДАНИЕ
+По результатам запросов к таблице products был найден медленный запрос: 
+SELECT id, category_id, name FROM products WHERE category_id = NN;
+где NN – это номер категории. Добавьте к таблице нужные индексы, чтобы запрос выполнялся быстрее.
+Индекс нужно назвать так же как поле.
+
+	CREATE INDEX category_id ON products(category_id);
+
+
+ЗАДАНИЕ
+В базе данных есть таблица calendar, в которой хранится информация о событиях в городах. 
+Самые популярные запросы к этой таблице затрагивают одновременно два поля: city_id и date. 
+Добавьте индекс с именем base_query для ускорения популярных запросов.
+
+	CREATE INDEX base_query ON calendar(city_id, date);
+	
+	
+ЗАДАНИЕ
+Имеется таблица passports для хранения данных из паспортов. Таблицу создали с помощью следующего запроса:
+CREATE TABLE passports (
+ id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ user_id INT UNSIGNED NOT NULL,
+ series VARCHAR(4) NOT NULL,
+ number VARCHAR(6) NOT NULL,
+ state ENUM('active','expired') NOT NULL DEFAULT 'active',
+ UNIQUE KEY series (series),
+ UNIQUE KEY number (number)
+     );	 
+В процессе эксплуатации базы данных выяснилось, что в таблицу нельзя добавить две записи с одинаковой серией или с одинаковым номером паспорта. 
+Хотя планировали, чтобы уникальность была только для совместных данных в series и number.
+Удалите неправильные индексы и создайте индекс с именем series_number, который удовлетворяет условию выше.
+
+	DROP INDEX number ON passports;
+	DROP INDEX series ON passports;
+	CREATE UNIQUE INDEX series_number ON passports(series, number);
+	
+	
+ЗАДАНИЕ
+Добавьте в таблицу articles поле state для хранения статуса статьи.
+Поле может принимать одно из трех значений: draft, correction или public, причем draft должно ставиться изначально. 
+NULL для поля запрещен.
+	
+	ALTER TABLE articles 
+	ADD COLUMN state ENUM('draft', 'correction', 'public') DEFAULT 'draft' NOT NULL;
+
+
+ЗАДАНИЕ
+Удалите из таблицы articles столбец state.
+	
+	ALTER TABLE articles
+	DROP COLUMN state; 
+
+
+ЗАДАНИЕ
+Добавьте в таблицу products столбец stock_place, в котором будет храниться место товара на складе.
+Места на складе обозначаются следующим кодом "M-24-4", где:
+M — это буква прохода (от А до Я);
+4 — номер полки (от 1 до 4).
+stock_place не может принимать NULL, а по умолчанию должен содержать пустую строку.
+
+	ALTER TABLE products 
+	ADD COLUMN stock_place VARCHAR(6) DEFAULT '' NOT NULL;
+
+
+ЗАДАНИЕ
+Были разработаны новые функции для сайта и теперь нужно расширить таблицу users. Добавьте в неё следующие поля:
+- birthday — день рождения пользователя, по умолчанию NULL.
+- last_visit — дата и время последнего визита, по умолчанию текущее время, NULL запрещен.
+- is_active — отметка о том, активен пользователь или нет. NULL запрещен, по умолчанию TRUE.
+- experience — опыт, целое положительное число от 0 до 100 тыс. NULL запрещен, по умолчанию 0.
+
+	ALTER TABLE users
+	ADD COLUMN
+			(birthday DATE DEFAULT NULL,
+			 last_visit DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			 is_active BOOL NOT NULL DEFAULT TRUE,
+			 experience MEDIUMINT UNSIGNED NOT NULL DEFAULT 0);
+
+
+ЗАДАНИЕ
+В таблице films хранится информация о фильмах, в том числе и рейтинг фильма на разных сайтах.
+В поле imdb — рейтинг IMDB от 0 до 10, а в поле kinopoisk— рейтинг кинопоиска. Также от 0 до 10.
+Добавьте в таблицу поле rating, для хранения среднего арифметического значения по всем рейтингам.
+По умолчанию поле должно содержать 0. Тип данных используйте такой же как и у других полей с рейтингом 
+(учитывайте не только сам тип данных, но и атрибуты). 
+Обновите все записи в таблице, чтобы поле rating содержало правильное значение.
+Изначально таблица films была создана с помощью запроса:
+CREATE TABLE films (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    kinopoisk FLOAT NOT NULL DEFAULT 0,
+    imdb FLOAT NOT NULL DEFAULT 0,
+    year YEAR NULL
+   );
+   
+    ALTER TABLE films 
+	ADD COLUMN rating FLOAT NOT NULL DEFAULT 0;
+
+	UPDATE films 
+	SET rating = (kinopoisk + imdb) / 2;
+
+
+ЗАДАНИЕ
+Цена товаров в таблице products хранится в поле типа SMALLINT, что позволяет задавать стоимость не более 65535 рублей. 
+Магазин собирается торговать продукцией премиум класса стоимостью до 1 млн. рублей.
+Измените тип столбца price, так чтобы можно было добавлять новые товары. 
+Значение по умолчанию и возможность использования NULL оставьте как в исходной таблице:
+CREATE TABLE products (
+    id INT UNSIGNED NOT NULL,
+    category_id INT UNSIGNED NULL DEFAULT NULL, 
+    name VARCHAR(100) NOT NULL,
+    count TINYINT UNSIGNED NOT NULL DEFAULT 0, 
+    price SMALLINT UNSIGNED NOT NULL DEFAULT 0
+  );
+
+	ALTER TABLE products 
+	MODIFY price MEDIUMINT UNSIGNED NOT NULL DEFAULT 0; 
+
+
+ЗАДАНИЕ
+В таблице twitts в поле message хранится текст твита пользователя. 
+Изначально твит ограничивали 140 символами для совместимости с SMS-сообщениями, 
+но в ноябре 2017 года компания расширила максимально допустимое число знаков в одном сообщении вдвое — до 280 символов.
+Измените поле message, чтобы в нем можно было хранить твиты до 280 символов. Изначально таблица twitts была создана с помощью запроса:
+CREATE TABLE twitts (
+    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL, 
+    date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    message VARCHAR(140) NOT NULL
+ );
+
+	ALTER TABLE twitts 
+	MODIFY message VARCHAR(280) NOT NULL;
+	
+	
+ЗАДАНИЕ
+В поле state в таблице orders хранятся статусы заказов: new, delivery, completed и cancelled.
+Разработчики решили добавить статус awaiting_payment (ожидание оплаты) для приема онлайн-платежей.
+Измените столбец state, чтобы в таблицу можно было добавлять заказы с новым статусом. 
+Также сделайте, чтобы поле state по умолчанию принимало значение new и запретите вставлять NULL.
+Изначально таблица orders была создана с помощью запроса:
+CREATE TABLE orders (
+    id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    amount MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    created DATETIME NOT NULL,
+    state ENUM('new', 'delivery', 'completed', 'cancelled')
+  );
+
+	ALTER TABLE orders 
+	MODIFY state ENUM('new', 'delivery', 'completed', 'cancelled', 'awaiting_payment') NOT NULL DEFAULT 'new';
+	
+	
+ЗАДАНИЕ
+В таблице users в поле name хранится имя пользователя. Мы решили дополнительно хранить и фамилию посетителя.
+Переименуйте name в first_name с сохранением типа данных. Также добавьте столбец last_name такого же типа и с теми же параметрами, что и first_name.
+Изначально таблица users была создана с помощью запроса:
+CREATE TABLE users (
+    id INT UNSIGNED NOT NULL,
+    name VARCHAR(20) NOT NULL DEFAULT '',
+    is_admin BOOL NOT NULL DEFAULT False
+ );
+ 
+	ALTER TABLE users 
+	CHANGE name first_name VARCHAR(20) NOT NULL DEFAULT '',
+	ADD COLUMN last_name VARCHAR(20) NOT NULL DEFAULT '';
+
+
+ЗАДАНИЕ
+Серия и номер паспорта в таблице passports хранятся в виде целых чисел. Преобразуйте поля series и number в строковые без возможности вставить NULL.
+Для серии зарезервируйте 4 символа, а для номера — 6. Добавьте уникальный индекс passport по полям, которые изменили.
+Изначально таблица passports была создана с помощью запроса:
+CREATE TABLE passports (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    series SMALLINT UNSIGNED NOT NULL,
+    number SMALLINT UNSIGNED NOT NULL
+  );
+  
+	ALTER TABLE passports 
+	MODIFY series VARCHAR(4) NOT NULL,
+	MODIFY number VARCHAR(6) NOT NULL;
+	CREATE UNIQUE INDEX passport ON passports(series, number);
+
+
+ЗАДАНИЕ
+В таблице logs хранятся данные о посещениях сайта. Время посещения добавляется автоматически в поле date при создании записи. 
+Однако DEFAULT CURRENT_TIMESTAMP не позволяет вставлять время с точностью до миллисекунд.
+Измените колонку date так, чтобы в неё можно было добавлять время с точностью до миллисекунд.
+Вставку NULL запретите, а значение по умолчанию удалите, так как теперь в нем нет смысла.
+Изначально таблица logs была создана с помощью запроса:
+CREATE TABLE logs (
+    date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    browser VARCHAR(500) NOT NULL DEFAULT '',
+    is_bot BOOLEAN NOT NULL DEFAULT FALSE
+   );
+
+	ALTER TABLE logs 
+	MODIFY date DATETIME(3) NOT NULL;
+
+
+ЗАДАНИЕ 
+Обычно имена таблиц указывают во множественном числе, так как это более точно отражает их содержание. 
+Переименуйте таблицу category в categories.
+
+	RENAME TABLE category TO categories 
+
+
+ЗАДАНИЕ
+По умолчанию, когда вы устанавливаете движок для блога wordpress, он создает таблицы с префиксом wp_. 
+Переименуйте все таблицы, которые начинаются с wp_, так, чтобы они начинались с blog_.
+Сейчас в базе находится 3 таких таблицы: wp_users, wp_posts и wp_comments.
+
+	RENAME TABLE  wp_users TO blog_users, 
+				  wp_posts TO blog_posts, 
+				  wp_comments TO blog_comments;
+	
+	
+ЗАДАНИЕ	
+В таблице wines содержится список вин с ценами. Отдел маркетинга посчитал, что цены, которые заканчиваются на два нуля, следует уменьшить на 1 рубль, 
+чтобы в конце было 99 (400 -> 399). Так цена будет казаться меньше. Напишите SQL запрос для решения этой задачи.
+
+	UPDATE wines
+	SET price = price -1 
+	WHERE price LIKE '%00';
+
+
+ЗАДАНИЕ
+В таблице products хранятся данные о товарах в компании. Во время внесения данных, менеджеры часто вставляли пробелы до и после названий. 
+Обновите имена продуктов так, чтобы в начале и в конце имен не было пробелов.
+
+	UPDATE products
+	SET name = TRIM(name)
+
+
+ЗАДАНИЕ
+В таблице domains содержится список доменных имен. Некоторые домены оканчиваются на точку, например (google.com.). 
+Обновите таблицу так, чтобы доменные имена не заканчивались точкой.
+
+	UPDATE domains
+	SET domain = TRIM(TRAILING '.' FROM domain)
+	
+
+ЗАДАНИЕ
+В таблице users в поле name хранятся имя и фамилия пользователя разделенные пробелами.
+  1. Создайте в таблице два дополнительных поля: first_name и last_name длиной 50 символов. 
+     Оба поля по умолчанию должны содержать пустую строку.
+  2. Заполните first_name именами пользователя, а last_name — фамилиями. Используйте данные из общего поля name.
+  3. В конце удалите поле name.
+
+	ALTER TABLE users
+	ADD COLUMN 
+			(first_name VARCHAR(50) not null DEFAULT '', 
+			 last_name VARCHAR(50) not null DEFAULT '');
+
+	UPDATE users
+	SET 
+		 first_name = SUBSTRING_INDEX(name, ' ', 1),
+		 last_name = SUBSTRING_INDEX(name, ' ', -1);
+
+	ALTER TABLE users
+	DROP COLUMN name;
+	
